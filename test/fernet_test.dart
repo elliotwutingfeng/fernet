@@ -52,9 +52,11 @@ void main() {
       ];
 
       for (final Map<String, String> testVector in testVectors) {
-        final Uint8List src = utf8.encode(testVector['src']!);
+        final Uint8List src =
+            Uint8List.fromList(utf8.encode(testVector['src']!));
         final String secret = testVector['secret']!;
-        final Uint8List token = utf8.encode(testVector['token']!);
+        final Uint8List token =
+            Uint8List.fromList(utf8.encode(testVector['token']!));
         final int ttlSec = int.parse(testVector['ttlSec']!);
         final int now = timeStampToInt(testVector['now']!);
 
@@ -74,7 +76,8 @@ void main() {
       ];
 
       for (final Map<String, String> testVector in testVectors) {
-        final Uint8List src = utf8.encode(testVector['src']!);
+        final Uint8List src =
+            Uint8List.fromList(utf8.encode(testVector['src']!));
         final String secret = testVector['secret']!;
         final Fernet fernet = Fernet(secret);
         final Uint8List token = fernet.encrypt(src);
@@ -89,8 +92,8 @@ void main() {
     test('Fernet.extractTimeStamp', () {
       final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
       const int currentTime = 1526138327;
-      final Uint8List token =
-          fernet.encryptAtTime(utf8.encode('encrypt me'), currentTime);
+      final Uint8List token = fernet.encryptAtTime(
+          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
       expect(fernet.extractTimeStamp(token), currentTime);
       expect(fernet.extractTimeStamp(utf8.decode(token)), currentTime);
 
@@ -109,14 +112,16 @@ void main() {
       ]);
       expect(() => fernet.extractTimeStamp(tamperedToken), throwsInvalidToken);
 
-      expect(() => fernet.extractTimeStamp(utf8.encode('nonsensetoken')),
+      expect(
+          () => fernet.extractTimeStamp(
+              Uint8List.fromList(utf8.encode('nonsensetoken'))),
           throwsInvalidToken);
       expect(() => fernet.extractTimeStamp(0), throwsArgumentError);
     });
 
     test('Fernet.decryptAtTime', () {
       final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
-      final Uint8List pt = utf8.encode('encrypt me');
+      final Uint8List pt = Uint8List.fromList(utf8.encode('encrypt me'));
       final Uint8List token = fernet.encryptAtTime(pt, 100);
       expect(fernet.decryptAtTime(token, 1, 100), pt);
       expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
@@ -143,27 +148,29 @@ void main() {
       final MultiFernet f = MultiFernet([f1, f2]);
 
       expect(
-        f1.decrypt(f.encrypt(utf8.encode('abc'))),
+        f1.decrypt(f.encrypt(Uint8List.fromList(utf8.encode('abc')))),
         [97, 98, 99],
       );
 
       // token as Uint8List
       expect(
-        f.decrypt(f1.encrypt(utf8.encode('abc'))),
+        f.decrypt(f1.encrypt(Uint8List.fromList(utf8.encode('abc')))),
         [97, 98, 99],
       );
       expect(
-        f.decrypt(f2.encrypt(utf8.encode('abc'))),
+        f.decrypt(f2.encrypt(Uint8List.fromList(utf8.encode('abc')))),
         [97, 98, 99],
       );
 
       // token as String
       expect(
-        f.decrypt(utf8.decode(f1.encrypt(utf8.encode('abc')))),
+        f.decrypt(
+            utf8.decode(f1.encrypt(Uint8List.fromList(utf8.encode('abc'))))),
         [97, 98, 99],
       );
       expect(
-        f.decrypt(utf8.decode(f2.encrypt(utf8.encode('abc')))),
+        f.decrypt(
+            utf8.decode(f2.encrypt(Uint8List.fromList(utf8.encode('abc'))))),
         [97, 98, 99],
       );
 
@@ -175,7 +182,7 @@ void main() {
     test('MultiFernet.decryptAtTime', () {
       final Fernet f1 = Fernet(base64Url.encode(Uint8List(32)));
       final MultiFernet f = MultiFernet([f1]);
-      final Uint8List pt = utf8.encode('encrypt me');
+      final Uint8List pt = Uint8List.fromList(utf8.encode('encrypt me'));
       final Uint8List token = f.encryptAtTime(pt, 100);
       expect(f.decryptAtTime(token, 1, 100), pt);
       expect(() => f.decryptAtTime(token, 1, 102), throwsInvalidToken);
@@ -188,7 +195,7 @@ void main() {
           Fernet(base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)));
       MultiFernet mf1 = MultiFernet([f1]);
       MultiFernet mf2 = MultiFernet([f2, f1]);
-      final Uint8List plaintext = utf8.encode('abc');
+      final Uint8List plaintext = Uint8List.fromList(utf8.encode('abc'));
 
       // Uint8List
       Uint8List mf1Ciphertext = mf1.encrypt(plaintext);

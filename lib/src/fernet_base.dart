@@ -179,7 +179,8 @@ class Fernet {
     final Uint8List hmac =
         CryptoUtils.hmacSHA256Digest(_signingKey, basicParts);
 
-    return utf8.encode(base64Url.encode([...basicParts, ...hmac]));
+    return Uint8List.fromList(
+        utf8.encode(base64Url.encode([...basicParts, ...hmac])));
   }
 
   /// Decrypts a fernet [token]. If successful you will receive the

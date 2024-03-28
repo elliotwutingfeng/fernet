@@ -11,7 +11,7 @@ void main() {
   // Argon2Parameters should be adjusted to be as high as your server
   // can tolerate. OWASP provides recommended parameter values at
   // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-  final Uint8List key = utf8.encode(
+  final Uint8List key = Uint8List.fromList(utf8.encode(
     base64Url.encode(
       (Argon2BytesGenerator()
             ..init(
@@ -24,10 +24,10 @@ void main() {
             ))
           .process(Uint8List.fromList(utf8.encode(pwd))),
     ),
-  );
+  ));
   final Fernet f = Fernet(key);
-  final Uint8List token =
-      f.encrypt(utf8.encode('A really secret message. Not for prying eyes.'));
+  final Uint8List token = f.encrypt(Uint8List.fromList(
+      utf8.encode('A really secret message. Not for prying eyes.')));
 
   print(utf8.decode(f.decrypt(token)));
   // OUTPUT: 'A really secret message. Not for prying eyes.'
