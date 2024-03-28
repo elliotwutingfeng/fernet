@@ -1,6 +1,6 @@
 name: fernet
 description: A Dart library for encrypting and decrypting messages using the Fernet scheme.
-version: 0.0.1
+version: 0.0.2
 repository: https://github.com/elliotwutingfeng/fernet
 funding:
  - https://www.buymeacoffee.com/elliotwutingfeng
