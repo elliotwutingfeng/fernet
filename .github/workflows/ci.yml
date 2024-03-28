@@ -21,7 +21,7 @@ jobs:
           sdk: ${{ matrix.sdk }}
 
       - name: Test and generate coverage report
-        run: make tests_default
+        run: make tests
 
       - name: Upload coverage to Coveralls
         if: matrix.os == 'ubuntu-latest' && matrix.sdk == '3.3'
