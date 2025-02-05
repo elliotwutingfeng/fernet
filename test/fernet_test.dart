@@ -239,6 +239,8 @@ void main() {
       final MultiFernet mf2 = MultiFernet([f1, f2]);
       const int currentTime = 1526138327;
 
+      expect(() => mf1.extractTimeStamp(0), throwsArgumentError);
+
       // First Fernet Valid Token
       Uint8List token = mf1.encryptAtTime(
           Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
