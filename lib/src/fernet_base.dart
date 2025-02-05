@@ -194,7 +194,7 @@ class Fernet {
   /// If [ttl] is not provided (or is null),
   /// the age of the message is not considered.
   Uint8List decrypt(dynamic token, {int? ttl}) {
-    if (token is! String && token is! Uint8List) {
+    if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
     final (int timestamp, Uint8List data) =
@@ -235,7 +235,7 @@ class Fernet {
   }
 
   static (int, Uint8List) _getUnverifiedTokenData(dynamic token) {
-    if (token is! String && token is! Uint8List) {
+    if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
     late Uint8List data;
@@ -382,6 +382,21 @@ class MultiFernet {
     for (final Fernet f in _fernets) {
       try {
         return f.decryptAtTime(token, ttl, currentTime);
+      } on InvalidToken {
+        continue;
+      }
+    }
+    throw InvalidToken();
+  }
+
+  /// See [Fernet.extractTimeStamp].
+  int extractTimeStamp(dynamic token) {
+    if (token is! Uint8List && token is! String) {
+      throw ArgumentError('token must be Uint8List or String');
+    }
+    for (final Fernet f in _fernets) {
+      try {
+        return f.extractTimeStamp(token);
       } on InvalidToken {
         continue;
       }

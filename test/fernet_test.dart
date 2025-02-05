@@ -230,5 +230,35 @@ void main() {
 
       expect(() => mf2.rotate(0), throwsArgumentError);
     });
+
+    test('MultiFernet.extractTimeStamp', () {
+      final Fernet f1 = Fernet(base64Url.encode(Uint8List(32)));
+      final Fernet f2 =
+          Fernet(base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)));
+      final MultiFernet mf1 = MultiFernet([f1]);
+      final MultiFernet mf2 = MultiFernet([f1, f2]);
+      const int currentTime = 1526138327;
+
+      // First Fernet Valid Token
+      Uint8List token = mf1.encryptAtTime(
+          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
+      expect(mf1.extractTimeStamp(token), currentTime);
+
+      // Second Fernet Valid Token
+      token = f2.encryptAtTime(
+          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
+      expect(mf2.extractTimeStamp(token), currentTime);
+
+      // Invalid Token
+      expect(() => mf1.extractTimeStamp(utf8.encode('nonsensetoken')),
+          throwsInvalidToken);
+      expect(() => mf1.extractTimeStamp(Uint8List.fromList([128, 97, 98, 99])),
+          throwsInvalidToken);
+      expect(() => mf1.extractTimeStamp(Uint8List.fromList([0])),
+          throwsInvalidToken);
+      expect(() => mf1.extractTimeStamp('nonsensetoken'), throwsInvalidToken);
+      expect(() => mf1.extractTimeStamp('abc'), throwsInvalidToken);
+      expect(() => mf1.extractTimeStamp(''), throwsInvalidToken);
+    });
   });
 }

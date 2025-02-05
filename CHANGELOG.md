@@ -1,3 +1,7 @@
+# v0.0.4
+
+- Add support for extractTimeStamp in MultiFernet.
+
 # v0.0.3
 
 - Bump dependencies.

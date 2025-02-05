@@ -8,7 +8,6 @@ jobs:
       fail-fast: false
       matrix:
           os: [macos-latest, windows-latest, ubuntu-latest]
-          sdk: ['3.4', '3.5']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -18,13 +17,13 @@ jobs:
       - name: Set up Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: ${{ matrix.sdk }}
+          sdk: '3.6'
 
       - name: Test and generate coverage report
         run: make tests
 
       - name: Upload coverage to Coveralls
-        if: matrix.os == 'ubuntu-latest' && matrix.sdk == '3.5'
+        if: matrix.os == 'ubuntu-latest'
         uses: coverallsapp/github-action@v2
 
   format-markdown:
