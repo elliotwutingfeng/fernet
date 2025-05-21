@@ -13,50 +13,64 @@ void main() {
   group('Fernet', () {
     test('Fernet()', () {
       expect(
-          () => Fernet('YQ=='), throwsArgumentError); // keyDecoded.length != 32
-      expect(() => Fernet('a'),
-          throwsArgumentError); // Not url-safe base64-encoded bytes
+        () => Fernet('YQ=='),
+        throwsArgumentError,
+      ); // keyDecoded.length != 32
+      expect(
+        () => Fernet('a'),
+        throwsArgumentError,
+      ); // Not url-safe base64-encoded bytes
       expect(() => Fernet(0), throwsArgumentError); // Not Uint8List or String
     });
 
     test('CryptoUtils.aesCbc', () {
       expect(
-          () => CryptoUtils.aesCbc(
-              Uint8List(0), Uint8List(0), Uint8List(0), true),
-          throwsArgumentError);
+        () =>
+            CryptoUtils.aesCbc(Uint8List(0), Uint8List(0), Uint8List(0), true),
+        throwsArgumentError,
+      );
       expect(
-          () => CryptoUtils.aesCbc(
-              Uint8List(16), Uint8List(0), Uint8List(0), true),
-          throwsArgumentError);
+        () =>
+            CryptoUtils.aesCbc(Uint8List(16), Uint8List(0), Uint8List(0), true),
+        throwsArgumentError,
+      );
       expect(
-          () => CryptoUtils.aesCbc(
-              Uint8List(16), Uint8List(16), Uint8List(17), true),
-          throwsArgumentError);
+        () => CryptoUtils.aesCbc(
+          Uint8List(16),
+          Uint8List(16),
+          Uint8List(17),
+          true,
+        ),
+        throwsArgumentError,
+      );
     });
 
     test(
-        'Fernet.generateKey',
-        () => expect(base64Url.decode(Fernet.generateKey()).length,
-            32)); // 32 random bytes
+      'Fernet.generateKey',
+      () => expect(base64Url.decode(Fernet.generateKey()).length, 32),
+    ); // 32 random bytes
 
     test('Fernet.decryptAtTime', () {
       final List<Map<String, String>> testVectors = [
         {
-          'token': 'gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_'
+          'token':
+              'gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_'
               '5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==',
           'now': '1985-10-26T01:20:01-07:00',
           'ttlSec': '60',
           'src': 'hello',
-          'secret': 'cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4='
-        }
+          'secret': 'cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=',
+        },
       ];
 
       for (final Map<String, String> testVector in testVectors) {
-        final Uint8List src =
-            Uint8List.fromList(utf8.encode(testVector['src']!));
+        final Uint8List src = Uint8List.fromList(
+          utf8.encode(testVector['src']!),
+        );
         final String secret = testVector['secret']!;
-        final Uint8List token =
-            Uint8List.fromList(utf8.encode(testVector['token']!));
+        final Uint8List token = Uint8List.fromList(
+          utf8.encode(testVector['token']!),
+        );
         final int ttlSec = int.parse(testVector['ttlSec']!);
         final int now = timeStampToInt(testVector['now']!);
 
@@ -71,13 +85,14 @@ void main() {
         {
           'src': ('the quick brown fox jumps over the lazy dog\n' * 10)
               .trimRight(),
-          'secret': 'DxWrhEe-a0rv0nEsMXXZK8lkQpMAQcv1GLm1CvjPVwQ='
-        }
+          'secret': 'DxWrhEe-a0rv0nEsMXXZK8lkQpMAQcv1GLm1CvjPVwQ=',
+        },
       ];
 
       for (final Map<String, String> testVector in testVectors) {
-        final Uint8List src =
-            Uint8List.fromList(utf8.encode(testVector['src']!));
+        final Uint8List src = Uint8List.fromList(
+          utf8.encode(testVector['src']!),
+        );
         final String secret = testVector['secret']!;
         final Fernet fernet = Fernet(secret);
         final Uint8List token = fernet.encrypt(src);
@@ -93,7 +108,9 @@ void main() {
       final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
       const int currentTime = 1526138327;
       final Uint8List token = fernet.encryptAtTime(
-          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
+        Uint8List.fromList(utf8.encode('encrypt me')),
+        currentTime,
+      );
       expect(fernet.extractTimeStamp(token), currentTime);
       expect(fernet.extractTimeStamp(utf8.decode(token)), currentTime);
 
@@ -113,9 +130,11 @@ void main() {
       expect(() => fernet.extractTimeStamp(tamperedToken), throwsInvalidToken);
 
       expect(
-          () => fernet.extractTimeStamp(
-              Uint8List.fromList(utf8.encode('nonsensetoken'))),
-          throwsInvalidToken);
+        () => fernet.extractTimeStamp(
+          Uint8List.fromList(utf8.encode('nonsensetoken')),
+        ),
+        throwsInvalidToken,
+      );
       expect(() => fernet.extractTimeStamp(0), throwsArgumentError);
     });
 
@@ -126,13 +145,21 @@ void main() {
       expect(fernet.decryptAtTime(token, 1, 100), pt);
       expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
       expect(
-          () => fernet.decryptAtTime(Uint8List(0), 1, 100), throwsInvalidToken);
+        () => fernet.decryptAtTime(Uint8List(0), 1, 100),
+        throwsInvalidToken,
+      );
       expect(
-          () => fernet.decryptAtTime(
-              base64Url.encode([0, 1, 2, 3, 4, 5, 6, 7, 8]), 1, 100),
-          throwsInvalidToken);
-      expect(() => fernet.decryptAtTime(token.sublist(0, 8), 1, 100),
-          throwsInvalidToken);
+        () => fernet.decryptAtTime(
+          base64Url.encode([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+          1,
+          100,
+        ),
+        throwsInvalidToken,
+      );
+      expect(
+        () => fernet.decryptAtTime(token.sublist(0, 8), 1, 100),
+        throwsInvalidToken,
+      );
       expect(() => fernet.decryptAtTime(0, 1, 100), throwsArgumentError);
     });
   });
@@ -147,30 +174,35 @@ void main() {
       final Fernet f2 = Fernet(base64Url.encode(Uint8List(32)));
       final MultiFernet f = MultiFernet([f1, f2]);
 
-      expect(
-        f1.decrypt(f.encrypt(Uint8List.fromList(utf8.encode('abc')))),
-        [97, 98, 99],
-      );
+      expect(f1.decrypt(f.encrypt(Uint8List.fromList(utf8.encode('abc')))), [
+        97,
+        98,
+        99,
+      ]);
 
       // token as Uint8List
-      expect(
-        f.decrypt(f1.encrypt(Uint8List.fromList(utf8.encode('abc')))),
-        [97, 98, 99],
-      );
-      expect(
-        f.decrypt(f2.encrypt(Uint8List.fromList(utf8.encode('abc')))),
-        [97, 98, 99],
-      );
+      expect(f.decrypt(f1.encrypt(Uint8List.fromList(utf8.encode('abc')))), [
+        97,
+        98,
+        99,
+      ]);
+      expect(f.decrypt(f2.encrypt(Uint8List.fromList(utf8.encode('abc')))), [
+        97,
+        98,
+        99,
+      ]);
 
       // token as String
       expect(
         f.decrypt(
-            utf8.decode(f1.encrypt(Uint8List.fromList(utf8.encode('abc'))))),
+          utf8.decode(f1.encrypt(Uint8List.fromList(utf8.encode('abc')))),
+        ),
         [97, 98, 99],
       );
       expect(
         f.decrypt(
-            utf8.decode(f2.encrypt(Uint8List.fromList(utf8.encode('abc'))))),
+          utf8.decode(f2.encrypt(Uint8List.fromList(utf8.encode('abc')))),
+        ),
         [97, 98, 99],
       );
 
@@ -191,8 +223,9 @@ void main() {
 
     test('MultiFernet.rotate', () {
       final Fernet f1 = Fernet(base64Url.encode(Uint8List(32)));
-      final Fernet f2 =
-          Fernet(base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)));
+      final Fernet f2 = Fernet(
+        base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)),
+      );
       MultiFernet mf1 = MultiFernet([f1]);
       MultiFernet mf2 = MultiFernet([f2, f1]);
       final Uint8List plaintext = Uint8List.fromList(utf8.encode('abc'));
@@ -219,8 +252,10 @@ void main() {
       mf1Ciphertext = mf1.encryptAtTime(plaintext, originalTime);
       final int rotatedTime = f1.extractTimeStamp(mf1Ciphertext);
 
-      expect(DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          isNot(equals(rotatedTime)));
+      expect(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        isNot(equals(rotatedTime)),
+      );
       expect(originalTime, rotatedTime);
 
       // decrypt no shared keys
@@ -233,8 +268,9 @@ void main() {
 
     test('MultiFernet.extractTimeStamp', () {
       final Fernet f1 = Fernet(base64Url.encode(Uint8List(32)));
-      final Fernet f2 =
-          Fernet(base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)));
+      final Fernet f2 = Fernet(
+        base64Url.encode(Uint8List(32)..fillRange(0, 32, 1)),
+      );
       final MultiFernet mf1 = MultiFernet([f1]);
       final MultiFernet mf2 = MultiFernet([f1, f2]);
       const int currentTime = 1526138327;
@@ -243,21 +279,31 @@ void main() {
 
       // First Fernet Valid Token
       Uint8List token = mf1.encryptAtTime(
-          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
+        Uint8List.fromList(utf8.encode('encrypt me')),
+        currentTime,
+      );
       expect(mf1.extractTimeStamp(token), currentTime);
 
       // Second Fernet Valid Token
       token = f2.encryptAtTime(
-          Uint8List.fromList(utf8.encode('encrypt me')), currentTime);
+        Uint8List.fromList(utf8.encode('encrypt me')),
+        currentTime,
+      );
       expect(mf2.extractTimeStamp(token), currentTime);
 
       // Invalid Token
-      expect(() => mf1.extractTimeStamp(utf8.encode('nonsensetoken')),
-          throwsInvalidToken);
-      expect(() => mf1.extractTimeStamp(Uint8List.fromList([128, 97, 98, 99])),
-          throwsInvalidToken);
-      expect(() => mf1.extractTimeStamp(Uint8List.fromList([0])),
-          throwsInvalidToken);
+      expect(
+        () => mf1.extractTimeStamp(utf8.encode('nonsensetoken')),
+        throwsInvalidToken,
+      );
+      expect(
+        () => mf1.extractTimeStamp(Uint8List.fromList([128, 97, 98, 99])),
+        throwsInvalidToken,
+      );
+      expect(
+        () => mf1.extractTimeStamp(Uint8List.fromList([0])),
+        throwsInvalidToken,
+      );
       expect(() => mf1.extractTimeStamp('nonsensetoken'), throwsInvalidToken);
       expect(() => mf1.extractTimeStamp('abc'), throwsInvalidToken);
       expect(() => mf1.extractTimeStamp(''), throwsInvalidToken);

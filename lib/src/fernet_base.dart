@@ -60,7 +60,11 @@ mixin CryptoUtils {
   ///
   /// To encrypt, set [encrypt] to true. To decrypt, set [encrypt] to false.
   static Uint8List aesCbc(
-      Uint8List key, Uint8List iv, Uint8List sourceText, bool encrypt) {
+    Uint8List key,
+    Uint8List iv,
+    Uint8List sourceText,
+    bool encrypt,
+  ) {
     if (![16, 24, 32].contains(key.length)) {
       throw ArgumentError('key.length must be 16, 24, or 32.');
     }
@@ -166,21 +170,28 @@ class Fernet {
 
   Uint8List _encryptFromParts(Uint8List data, int currentTime, Uint8List iv) {
     final Uint8List paddedData = CryptoUtils.pad(data, 128 ~/ 8);
-    final Uint8List cipherText =
-        CryptoUtils.aesCbc(_encryptionKey, iv, paddedData, true);
+    final Uint8List cipherText = CryptoUtils.aesCbc(
+      _encryptionKey,
+      iv,
+      paddedData,
+      true,
+    );
 
     final Uint8List basicParts = Uint8List.fromList([
       0x80,
       ...ByteUtils.intToBigEndianBytes(currentTime),
       ...iv,
-      ...cipherText
+      ...cipherText,
     ]);
 
-    final Uint8List hmac =
-        CryptoUtils.hmacSHA256Digest(_signingKey, basicParts);
+    final Uint8List hmac = CryptoUtils.hmacSHA256Digest(
+      _signingKey,
+      basicParts,
+    );
 
     return Uint8List.fromList(
-        utf8.encode(base64Url.encode([...basicParts, ...hmac])));
+      utf8.encode(base64Url.encode([...basicParts, ...hmac])),
+    );
   }
 
   /// Decrypts a fernet [token]. If successful you will receive the
@@ -197,8 +208,9 @@ class Fernet {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
-    final (int timestamp, Uint8List data) =
-        Fernet._getUnverifiedTokenData(token);
+    final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
+      token,
+    );
     List<int>? timeInfo;
     if (ttl != null) {
       timeInfo = [ttl, DateTime.now().millisecondsSinceEpoch ~/ 1000];
@@ -218,8 +230,9 @@ class Fernet {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
-    final (int timestamp, Uint8List data) =
-        Fernet._getUnverifiedTokenData(token);
+    final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
+      token,
+    );
     return _decryptData(data, timestamp, [ttl, currentTime]);
   }
 
@@ -227,8 +240,9 @@ class Fernet {
   /// The caller can then decide if the [token] is about to expire and,
   /// for example, issue a new [token].
   int extractTimeStamp(dynamic token) {
-    final (int timestamp, Uint8List data) =
-        Fernet._getUnverifiedTokenData(token);
+    final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
+      token,
+    );
     // Verify the token was not tampered with.
     _verifySignature(data);
     return timestamp;
@@ -259,7 +273,9 @@ class Fernet {
 
   void _verifySignature(Uint8List data) {
     final Uint8List hmac = CryptoUtils.hmacSHA256Digest(
-        _signingKey, data.sublist(0, data.length - 32));
+      _signingKey,
+      data.sublist(0, data.length - 32),
+    );
     final Uint8List expectedMac = data.sublist(data.length - 32);
     if (!CryptoUtils.listEquals(hmac, expectedMac)) {
       throw InvalidToken();
@@ -281,8 +297,12 @@ class Fernet {
     final Uint8List iv = data.sublist(9, 25);
     final Uint8List cipherText = data.sublist(25, data.length - 32);
 
-    final Uint8List paddedPlainText =
-        CryptoUtils.aesCbc(_encryptionKey, iv, cipherText, false);
+    final Uint8List paddedPlainText = CryptoUtils.aesCbc(
+      _encryptionKey,
+      iv,
+      cipherText,
+      false,
+    );
 
     late Uint8List plaintext;
     // coverage:ignore-start
@@ -341,8 +361,9 @@ class MultiFernet {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
-    final (int timestamp, Uint8List data) =
-        Fernet._getUnverifiedTokenData(token);
+    final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
+      token,
+    );
     Uint8List? p;
     for (final Fernet f in _fernets) {
       try {

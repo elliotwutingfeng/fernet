@@ -10,7 +10,7 @@ This is a direct port of the Fernet implementation in the Python [cryptography](
 
 ## Requirements
 
-- **Dart SDK:** 3.6+
+- **Dart SDK:** 3.8+
 
 ## Using passwords with Fernet
 
