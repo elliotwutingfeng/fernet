@@ -8,6 +8,7 @@ jobs:
       fail-fast: false
       matrix:
           os: [macos-latest, windows-latest, ubuntu-latest]
+          sdk: ['3.8']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -17,13 +18,25 @@ jobs:
       - name: Set up Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: '3.8'
+          sdk: ${{ matrix.sdk }}
+      
+      - name: Install lcov (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install lcov
+
+      - name: Install lcov (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install lcov
+
+      - name: Install lcov (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y lcov
 
       - name: Test and generate coverage report
-        run: make tests
+        run: make tests_with_coverage_report
 
       - name: Upload coverage to Coveralls
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.sdk == '3.8'
         uses: coverallsapp/github-action@v2
 
   format-markdown:
