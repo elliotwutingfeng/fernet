@@ -26,7 +26,9 @@ jobs:
 
       - name: Install lcov (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install lcov
+        run: |
+          choco install lcov
+          echo "C:\ProgramData\chocolatey\lib\lcov\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install lcov (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
