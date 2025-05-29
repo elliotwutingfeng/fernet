@@ -17,6 +17,6 @@ dependencies:
   pointycastle: ^4.0.0
 
 dev_dependencies:
-  coverage: ^1.13.1
+  coverage: ^1.14.0
   lints: ^6.0.0
   test: ^1.26.2
