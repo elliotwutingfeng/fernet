@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 final Matcher throwsInvalidToken = throwsA(isA<InvalidToken>());
 
-int timeStampToInt(String timeStamp) =>
+int timeStampToInt(final String timeStamp) =>
     DateTime.parse(timeStamp).millisecondsSinceEpoch ~/ 1000;
 
 void main() {

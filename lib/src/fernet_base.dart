@@ -19,7 +19,10 @@ const int _maxClockSkew = 60;
 /// Utility methods for converting between integer and big endian bytes.
 mixin ByteUtils {
   /// Return a Uint8List of big endian bytes representing an integer.
-  static Uint8List intToBigEndianBytes(int value, {int length = 8}) {
+  static Uint8List intToBigEndianBytes(
+    final int value, {
+    final int length = 8,
+  }) {
     final Uint8List result = Uint8List(length);
     for (int i = 0; i < length; i++) {
       result[length - 1 - i] = (value >> (8 * i)) & 0xff;
@@ -28,7 +31,7 @@ mixin ByteUtils {
   }
 
   /// Return an integer representing a Uint8List of big endian bytes.
-  static int intFromBigEndianBytes(List<int> bytes) {
+  static int intFromBigEndianBytes(final List<int> bytes) {
     int result = 0;
     for (int i = 0; i < bytes.length; i++) {
       result = (result << 8) + bytes[i];
@@ -40,7 +43,7 @@ mixin ByteUtils {
 /// Utility methods for cryptographic algorithms AES-CBC and HMAC-SHA256.
 mixin CryptoUtils {
   /// PKCS7 padding before AES-CBC encryption.
-  static Uint8List pad(Uint8List bytes, int blockSizeBytes) {
+  static Uint8List pad(final Uint8List bytes, final int blockSizeBytes) {
     final int padLength = blockSizeBytes - (bytes.length % blockSizeBytes);
     final Uint8List padded = Uint8List(bytes.length + padLength)
       ..setAll(0, bytes);
@@ -49,7 +52,7 @@ mixin CryptoUtils {
   }
 
   /// PKCS7 unpadding after AES-CBC decryption.
-  static Uint8List unpad(Uint8List bytes) {
+  static Uint8List unpad(final Uint8List bytes) {
     final int padLength = (PKCS7Padding()..init(null)).padCount(bytes);
     final int len = bytes.length - padLength;
     return Uint8List(len)..setRange(0, len, bytes);
@@ -60,10 +63,10 @@ mixin CryptoUtils {
   ///
   /// To encrypt, set [encrypt] to true. To decrypt, set [encrypt] to false.
   static Uint8List aesCbc(
-    Uint8List key,
-    Uint8List iv,
-    Uint8List sourceText,
-    bool encrypt,
+    final Uint8List key,
+    final Uint8List iv,
+    final Uint8List sourceText,
+    final bool encrypt,
   ) {
     if (![16, 24, 32].contains(key.length)) {
       throw ArgumentError('key.length must be 16, 24, or 32.');
@@ -92,7 +95,7 @@ mixin CryptoUtils {
   }
 
   /// Compare 2 lists element-by-element in constant-time.
-  static bool listEquals(List<dynamic> list1, List<dynamic> list2) {
+  static bool listEquals(final List<dynamic> list1, final List<dynamic> list2) {
     if (list1.length != list2.length) return false;
     int mismatch = 0;
     for (int i = 0; i < list1.length; i++) {
@@ -103,7 +106,7 @@ mixin CryptoUtils {
 
   /// Generate a Uint8List of random bytes of size [length] suitable
   /// for cryptographic use.
-  static Uint8List secureRandomBytes(int length) {
+  static Uint8List secureRandomBytes(final int length) {
     final Random random = Random.secure();
     final Uint8List bytes = Uint8List(length);
     for (int i = 0; i < length; i++) {
@@ -113,8 +116,10 @@ mixin CryptoUtils {
   }
 
   /// Return HMAC-SHA256 digest of [data] for given secret [key].
-  static Uint8List hmacSHA256Digest(Uint8List key, Uint8List data) =>
-      (HMac(SHA256Digest(), 64)..init(KeyParameter(key))).process(data);
+  static Uint8List hmacSHA256Digest(
+    final Uint8List key,
+    final Uint8List data,
+  ) => (HMac(SHA256Digest(), 64)..init(KeyParameter(key))).process(data);
 }
 
 /// This class provides both encryption and decryption facilities.
@@ -126,7 +131,7 @@ class Fernet {
   /// be 32-bytes long before base64-encoding.
   /// This **must** be kept secret.
   /// Anyone with this [key] is able to create and read messages.
-  Fernet(dynamic key) {
+  Fernet(final dynamic key) {
     if (key is! Uint8List && key is! String) {
       throw ArgumentError('key must be Uint8List or String');
     }
@@ -155,7 +160,7 @@ class Fernet {
 
   /// Encrypts [data] passed. The result of this encryption is known as a
   /// "Fernet token" and has strong privacy and authenticity guarantees.
-  Uint8List encrypt(Uint8List data) =>
+  Uint8List encrypt(final Uint8List data) =>
       encryptAtTime(data, DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
   /// Encrypts [data] passed using explicitly passed [currentTime].
@@ -165,10 +170,14 @@ class Fernet {
   /// to test token expiration. Since this method can be used in an
   /// insecure manner one should make sure the correct time
   /// is passed as [currentTime] outside testing.
-  Uint8List encryptAtTime(Uint8List data, int currentTime) =>
+  Uint8List encryptAtTime(final Uint8List data, final int currentTime) =>
       _encryptFromParts(data, currentTime, CryptoUtils.secureRandomBytes(16));
 
-  Uint8List _encryptFromParts(Uint8List data, int currentTime, Uint8List iv) {
+  Uint8List _encryptFromParts(
+    final Uint8List data,
+    final int currentTime,
+    final Uint8List iv,
+  ) {
     final Uint8List paddedData = CryptoUtils.pad(data, 128 ~/ 8);
     final Uint8List cipherText = CryptoUtils.aesCbc(
       _encryptionKey,
@@ -204,7 +213,7 @@ class Fernet {
   /// (from the time it was originally created) an exception will be thrown.
   /// If [ttl] is not provided (or is null),
   /// the age of the message is not considered.
-  Uint8List decrypt(dynamic token, {int? ttl}) {
+  Uint8List decrypt(final dynamic token, {final int? ttl}) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -226,7 +235,11 @@ class Fernet {
   /// test [token] expiration. Since this method can be used in an insecure
   /// manner one should make sure the correct time is passed
   /// as [currentTime] outside testing.
-  Uint8List decryptAtTime(dynamic token, int ttl, int currentTime) {
+  Uint8List decryptAtTime(
+    final dynamic token,
+    final int ttl,
+    final int currentTime,
+  ) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -239,7 +252,7 @@ class Fernet {
   /// Returns the Unix timestamp for the [token].
   /// The caller can then decide if the [token] is about to expire and,
   /// for example, issue a new [token].
-  int extractTimeStamp(dynamic token) {
+  int extractTimeStamp(final dynamic token) {
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
     );
@@ -248,7 +261,7 @@ class Fernet {
     return timestamp;
   }
 
-  static (int, Uint8List) _getUnverifiedTokenData(dynamic token) {
+  static (int, Uint8List) _getUnverifiedTokenData(final dynamic token) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -271,7 +284,7 @@ class Fernet {
     return (timestamp, data);
   }
 
-  void _verifySignature(Uint8List data) {
+  void _verifySignature(final Uint8List data) {
     final Uint8List hmac = CryptoUtils.hmacSHA256Digest(
       _signingKey,
       data.sublist(0, data.length - 32),
@@ -282,7 +295,11 @@ class Fernet {
     }
   }
 
-  Uint8List _decryptData(Uint8List data, int timestamp, List<int>? timeInfo) {
+  Uint8List _decryptData(
+    final Uint8List data,
+    final int timestamp,
+    final List<int>? timeInfo,
+  ) {
     if (timeInfo is List<int>) {
       final int ttl = timeInfo[0];
       final int currentTime = timeInfo[1];
@@ -338,7 +355,7 @@ class Fernet {
 class MultiFernet {
   late List<Fernet> _fernets;
 
-  MultiFernet(List<Fernet> fernets) {
+  MultiFernet(final List<Fernet> fernets) {
     if (fernets.isEmpty) {
       throw ArgumentError('MultiFernet requires at least one Fernet instance');
     }
@@ -346,18 +363,18 @@ class MultiFernet {
   }
 
   /// See [Fernet.encrypt].
-  Uint8List encrypt(Uint8List data) =>
+  Uint8List encrypt(final Uint8List data) =>
       encryptAtTime(data, DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
   /// See [Fernet.encryptAtTime].
-  Uint8List encryptAtTime(Uint8List data, int currentTime) =>
+  Uint8List encryptAtTime(final Uint8List data, final int currentTime) =>
       _fernets[0].encryptAtTime(data, currentTime);
 
   /// Rotates a [token] by re-encrypting it under the [MultiFernet] instance's
   /// primary key. This preserves the timestamp that was originally saved with
   /// the [token]. If a [token] has successfully been rotated then the rotated
   /// [token] will be returned. If rotation fails this will throw an exception.
-  Uint8List rotate(dynamic token) {
+  Uint8List rotate(final dynamic token) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -381,7 +398,7 @@ class MultiFernet {
   }
 
   /// See [Fernet.decrypt].
-  Uint8List decrypt(dynamic token, {int? ttl}) {
+  Uint8List decrypt(final dynamic token, {final int? ttl}) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -396,7 +413,11 @@ class MultiFernet {
   }
 
   /// See [Fernet.decryptAtTime].
-  Uint8List decryptAtTime(dynamic token, int ttl, int currentTime) {
+  Uint8List decryptAtTime(
+    final dynamic token,
+    final int ttl,
+    final int currentTime,
+  ) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }
@@ -411,7 +432,7 @@ class MultiFernet {
   }
 
   /// See [Fernet.extractTimeStamp].
-  int extractTimeStamp(dynamic token) {
+  int extractTimeStamp(final dynamic token) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String');
     }

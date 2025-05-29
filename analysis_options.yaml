@@ -1,1 +1,25 @@
 include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    - always_declare_return_types
+    - always_put_required_named_parameters_first
+    - always_use_package_imports
+    - cascade_invocations
+    - combinators_ordering
+    - directives_ordering
+    - lines_longer_than_80_chars
+    - noop_primitive_operations
+    - prefer_const_declarations
+    - prefer_expression_function_bodies
+    - prefer_final_in_for_each
+    - prefer_final_locals
+    - prefer_final_parameters
+    - prefer_foreach
+    - prefer_single_quotes
+    - sort_pub_dependencies
+    - type_annotate_public_apis
+    - unnecessary_await_in_return
+    - unawaited_futures
+    - unnecessary_parenthesis
+    - unnecessary_statements
