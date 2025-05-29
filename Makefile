@@ -5,4 +5,5 @@ tests:
 	dart run coverage:test_with_coverage --function-coverage --branch-coverage
 
 tests_with_coverage_report: tests
+	rm -rf coverage/html
 	genhtml coverage/lcov.info -o coverage/html
