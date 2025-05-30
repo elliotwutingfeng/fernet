@@ -1,3 +1,7 @@
+format:
+	dart fix --apply
+	dart format .
+
 tests:
 	dart pub get
 	dart format --output none --set-exit-if-changed .
