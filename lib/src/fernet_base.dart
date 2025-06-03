@@ -53,7 +53,7 @@ mixin CryptoUtils {
 
   /// PKCS7 unpadding after AES-CBC decryption.
   static Uint8List unpad(final Uint8List bytes) {
-    final int padLength = (PKCS7Padding()..init(null)).padCount(bytes);
+    final int padLength = (PKCS7Padding()..init()).padCount(bytes);
     final int len = bytes.length - padLength;
     return Uint8List(len)..setRange(0, len, bytes);
   }
@@ -94,12 +94,12 @@ mixin CryptoUtils {
     return targetText;
   }
 
-  /// Compare 2 lists element-by-element in constant-time.
-  static bool listEquals(final List<dynamic> list1, final List<dynamic> list2) {
+  /// Compare 2 lists of integers element-by-element in constant-time.
+  static bool listEquals(final List<int> list1, final List<int> list2) {
     if (list1.length != list2.length) return false;
     int mismatch = 0;
     for (int i = 0; i < list1.length; i++) {
-      mismatch |= list1[i] ^ list2[i];
+      mismatch |= (list1[i]) ^ (list2[i]);
     }
     return mismatch == 0;
   }
@@ -136,7 +136,7 @@ class Fernet {
       throw ArgumentError('key must be Uint8List or String');
     }
     try {
-      final String keyStr = key is String ? key : utf8.decode(key);
+      final String keyStr = key is String ? key : utf8.decode(key as Uint8List);
       final Uint8List keyDecoded = base64Url.decode(keyStr);
       if (keyDecoded.length != 32) {
         throw FormatException();
@@ -267,7 +267,9 @@ class Fernet {
     }
     late Uint8List data;
     try {
-      data = base64Url.decode(token is String ? token : utf8.decode(token));
+      data = base64Url.decode(
+        token is String ? token : utf8.decode(token as Uint8List),
+      );
     } on FormatException {
       throw InvalidToken();
     }

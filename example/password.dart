@@ -21,7 +21,6 @@ void main() {
                 desiredKeyLength: 32,
                 iterations: 2,
                 memory: 19 * 1024,
-                lanes: 1,
               ),
             ))
             .process(Uint8List.fromList(utf8.encode(pwd))),
