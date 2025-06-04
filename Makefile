@@ -10,4 +10,4 @@ tests:
 
 tests_with_coverage_report: tests
 	rm -rf coverage/html
-	genhtml coverage/lcov.info -o coverage/html
+	genhtml --ignore-errors inconsistent --function-coverage --branch-coverage coverage/lcov.info -o coverage/html

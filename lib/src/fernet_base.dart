@@ -86,11 +86,9 @@ mixin CryptoUtils {
     while (offset < sourceText.length) {
       offset += cbc.processBlock(sourceText, offset, targetText, offset);
     }
-    // coverage:ignore-start
     if (sourceText.length != offset) {
       throw ArgumentError('sourceText.length must be equal to offset.');
     }
-    // coverage:ignore-end
     return targetText;
   }
 
@@ -324,12 +322,11 @@ class Fernet {
     );
 
     late Uint8List plaintext;
-    // coverage:ignore-start
     try {
       plaintext = CryptoUtils.unpad(paddedPlainText);
     } on Exception {
       throw InvalidToken();
-    } // coverage:ignore-end
+    }
     return plaintext;
   }
 }
