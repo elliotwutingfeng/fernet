@@ -19,7 +19,7 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
-      
+
       - name: Install lcov (macOS)
         if: matrix.os == 'macos-latest'
         run: brew install lcov
@@ -34,7 +34,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
+      - name: Test without coverage report
+        if: matrix.os != 'ubuntu-latest'
+        run: make tests
+
       - name: Test and generate coverage report
+        if: matrix.os == 'ubuntu-latest'
         run: make tests_with_coverage_report
 
       - name: Upload coverage to Coveralls
