@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
           os: [macos-latest, windows-latest, ubuntu-latest]
-          sdk: ['3.8']
+          sdk: ['3.9']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -43,7 +43,7 @@ jobs:
         run: make tests_with_coverage_report
 
       - name: Upload coverage to Coveralls
-        if: matrix.os == 'ubuntu-latest' && matrix.sdk == '3.8'
+        if: matrix.os == 'ubuntu-latest' && matrix.sdk == '3.9'
         uses: coverallsapp/github-action@v2
 
   format-markdown:
