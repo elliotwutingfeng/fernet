@@ -183,10 +183,13 @@ class Fernet {
       paddedData,
       true,
     );
+    final Uint8List currentTimeBytes = ByteUtils.intToBigEndianBytes(
+      currentTime,
+    );
 
     final Uint8List basicParts = Uint8List.fromList([
       0x80,
-      ...ByteUtils.intToBigEndianBytes(currentTime),
+      ...currentTimeBytes,
       ...iv,
       ...cipherText,
     ]);
@@ -196,9 +199,7 @@ class Fernet {
       basicParts,
     );
 
-    return Uint8List.fromList(
-      utf8.encode(base64Url.encode([...basicParts, ...hmac])),
-    );
+    return utf8.encode(base64Url.encode([...basicParts, ...hmac]));
   }
 
   /// Decrypts a fernet [token]. If successful you will receive the
