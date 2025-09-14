@@ -8,9 +8,7 @@ void main() {
   final Fernet f2 = Fernet(Fernet.generateKey());
   final MultiFernet mf1 = MultiFernet([f1, f2]);
   final Uint8List token = mf1.encrypt(
-    Uint8List.fromList(
-      utf8.encode('A really secret message. Not for prying eyes.'),
-    ),
+    utf8.encode('A really secret message. Not for prying eyes.'),
   );
 
   print(utf8.decode(mf1.decrypt(token)));
