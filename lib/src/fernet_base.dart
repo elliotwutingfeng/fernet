@@ -1,6 +1,10 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
+
+import 'package:fernet/src/random_fill_sync_stub.dart'
+    if (dart.library.io) 'package:fernet/src/random_fill_sync_vm.dart'
+    if (dart.library.js_interop) 'package:fernet/src/random_fill_sync_js.dart'
+    as rf;
 
 import 'package:pointycastle/block/aes.dart';
 import 'package:pointycastle/block/modes/cbc.dart';
@@ -105,11 +109,8 @@ mixin CryptoUtils {
   /// Generate a Uint8List of random bytes of size [length] suitable
   /// for cryptographic use.
   static Uint8List secureRandomBytes(final int length) {
-    final Random random = Random.secure();
     final Uint8List bytes = Uint8List(length);
-    for (int i = 0; i < length; i++) {
-      bytes[i] = random.nextInt(256);
-    }
+    rf.randomFillSync(bytes);
     return bytes;
   }
 

@@ -1,3 +1,7 @@
+# v0.0.7
+
+- Add support for Node.js.
+
 # v0.0.6
 
 - Bump dependencies.
