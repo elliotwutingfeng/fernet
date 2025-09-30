@@ -9,7 +9,7 @@ extension type NodeCrypto._(JSObject _) implements JSObject {
 }
 
 @JS('crypto.getRandomValues')
-external JSObject getRandomValues(final JSUint8Array buffer);
+external JSObject getRandomValues(final JSUint8Array bytes);
 
 /// Fills [bytes] with cryptographically secure random values.
 void randomFillSync(final Uint8List bytes) {
