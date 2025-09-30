@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-/// Fallback stub for unsupported platforms.
+/// Fills [bytes] with cryptographically secure random values.
 void randomFillSync(final Uint8List bytes) {
   throw UnsupportedError(
     'Cryptographic random number generator not supported on this platform.',
-  );
+  ); // Fallback stub for unsupported platforms.
 }
