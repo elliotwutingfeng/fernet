@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:fernet/src/random_fill_sync_stub.dart'
     if (dart.library.io) 'package:fernet/src/random_fill_sync_vm.dart'
-    if (dart.library.js_interop) 'package:fernet/src/random_fill_sync_js.dart'
+    if (dart.library.js) 'package:fernet/src/random_fill_sync_js.dart'
     as rf;
 
 import 'package:pointycastle/block/aes.dart';
