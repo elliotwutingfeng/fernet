@@ -1,1 +1,2 @@
-platforms: [ vm, chrome, node ]
+platforms: [ vm, chrome, firefox, node ]
+compilers: [ kernel, dart2js, dart2wasm ]
