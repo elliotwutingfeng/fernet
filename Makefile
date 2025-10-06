@@ -1,3 +1,6 @@
+setup_pre_commit:
+	uvx pre-commit install
+
 format:
 	dart fix --apply
 	dart format .

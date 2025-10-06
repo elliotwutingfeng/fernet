@@ -1,0 +1,13 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: check-yaml
+        always_run: true
+-   repo: local
+    hooks:
+    -   id: make-tests-with-coverage-report
+        always_run: true
+        name: Run make tests_with_coverage_report
+        language: system
+        entry: make tests_with_coverage_report
