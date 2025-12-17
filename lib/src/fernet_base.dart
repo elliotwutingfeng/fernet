@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:fernet/src/random_fill_sync_stub.dart'
-    if (dart.library.io) 'package:fernet/src/random_fill_sync_vm.dart'
-    if (dart.library.js_interop) 'package:fernet/src/random_fill_sync_js.dart'
+import 'package:fernet/src/random_bytes_stub.dart'
+    if (dart.library.io) 'package:fernet/src/random_bytes_vm.dart'
+    if (dart.library.js_interop) 'package:fernet/src/random_bytes_js.dart'
     as rf;
 
 import 'package:pointycastle/block/aes.dart';
@@ -109,9 +109,10 @@ mixin CryptoUtils {
   /// Generate a Uint8List of random bytes of size [length] suitable
   /// for cryptographic use.
   static Uint8List secureRandomBytes(final int length) {
-    final Uint8List bytes = Uint8List(length);
-    rf.randomFillSync(bytes);
-    return bytes;
+    if (length <= 0) {
+      throw RangeError('Number of bytes to generate must be positive.');
+    }
+    return rf.randomBytes(length);
   }
 
   /// Return HMAC-SHA256 digest of [data] for given secret [key].
