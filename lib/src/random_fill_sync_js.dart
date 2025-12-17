@@ -7,7 +7,7 @@ import 'package:fernet/src/random_fill_sync_vm.dart' as vm;
 external NodeCrypto require(final String id);
 
 extension type NodeCrypto._(JSObject _) implements JSObject {
-  external JSObject randomFillSync(final JSArrayBuffer buffer);
+  external void randomFillSync(final JSUint8Array buffer);
 }
 
 /// Fills [bytes] with cryptographically secure random values.
@@ -17,6 +17,6 @@ void randomFillSync(final Uint8List bytes) {
     vm.randomFillSync(bytes);
   } catch (_) {
     // Node.js
-    require('crypto').randomFillSync(bytes.buffer.toJS);
+    require('crypto').randomFillSync(bytes.toJS);
   }
 }
