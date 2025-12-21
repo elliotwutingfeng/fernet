@@ -7,6 +7,4 @@
 /// [Fernet] also has support for implementing key rotation via [MultiFernet].
 library;
 
-import 'package:fernet/fernet.dart';
-
 export 'src/fernet_base.dart';

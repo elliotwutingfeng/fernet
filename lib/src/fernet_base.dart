@@ -13,8 +13,16 @@ import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/paddings/pkcs7.dart';
 import 'package:pointycastle/pointycastle.dart';
 
-/// See [Fernet.decrypt] for more information.
-class InvalidToken implements Exception {}
+class InvalidToken implements Exception {
+  final String? message;
+
+  InvalidToken([this.message]);
+
+  @override
+  String toString() => message != null
+      ? 'InvalidToken: $message'
+      : 'InvalidToken: Token is invalid.';
+}
 
 /// Maximum allowed grace period in seconds for
 /// system clock time being out of sync with Fernet token.
@@ -133,7 +141,7 @@ class Fernet {
   /// Anyone with this [key] is able to create and read messages.
   Fernet(final dynamic key) {
     if (key is! Uint8List && key is! String) {
-      throw ArgumentError('key must be Uint8List or String');
+      throw ArgumentError('key must be Uint8List or String.');
     }
     try {
       final String keyStr = key is String ? key : utf8.decode(key as Uint8List);
@@ -216,7 +224,7 @@ class Fernet {
   /// the age of the message is not considered.
   Uint8List decrypt(final dynamic token, {final int? ttl}) {
     if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
+      throw ArgumentError('token must be Uint8List or String.');
     }
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
@@ -242,7 +250,7 @@ class Fernet {
     final int currentTime,
   ) {
     if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
+      throw ArgumentError('token must be Uint8List or String.');
     }
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
@@ -264,7 +272,7 @@ class Fernet {
 
   static (int, Uint8List) _getUnverifiedTokenData(final dynamic token) {
     if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
+      throw ArgumentError('token must be Uint8List or String.');
     }
     late Uint8List data;
     try {
@@ -272,16 +280,16 @@ class Fernet {
         token is String ? token : utf8.decode(token as Uint8List),
       );
     } on FormatException {
-      throw InvalidToken();
+      throw InvalidToken('Invalid base64 encoding.');
     }
     if (data.isEmpty) {
-      throw InvalidToken();
+      throw InvalidToken('Empty token.');
     }
     if (data[0] != 0x80) {
-      throw InvalidToken();
+      throw InvalidToken('Invalid token version.');
     }
     if (data.length < 9) {
-      throw InvalidToken();
+      throw InvalidToken('Token too short.');
     }
     final int timestamp = ByteUtils.intFromBigEndianBytes(data.sublist(1, 9));
     return (timestamp, data);
@@ -294,7 +302,7 @@ class Fernet {
     );
     final Uint8List expectedMac = data.sublist(data.length - 32);
     if (!CryptoUtils.listEquals(hmac, expectedMac)) {
-      throw InvalidToken();
+      throw InvalidToken('Signature verification failed.');
     }
   }
 
@@ -308,7 +316,7 @@ class Fernet {
       final int currentTime = timeInfo[1];
       if (timestamp + ttl < currentTime ||
           currentTime + _maxClockSkew < timestamp) {
-        throw InvalidToken();
+        throw InvalidToken('Token expired or timestamp out of range.');
       }
     }
 
@@ -328,7 +336,7 @@ class Fernet {
     try {
       plaintext = CryptoUtils.unpad(paddedPlainText);
     } on Exception {
-      throw InvalidToken();
+      throw InvalidToken('Unpadding failed.');
     }
     return plaintext;
   }
@@ -359,7 +367,7 @@ class MultiFernet {
 
   MultiFernet(final List<Fernet> fernets) {
     if (fernets.isEmpty) {
-      throw ArgumentError('MultiFernet requires at least one Fernet instance');
+      throw ArgumentError('MultiFernet requires at least one Fernet instance.');
     }
     _fernets = fernets;
   }
@@ -377,9 +385,6 @@ class MultiFernet {
   /// the [token]. If a [token] has successfully been rotated then the rotated
   /// [token] will be returned. If rotation fails this will throw an exception.
   Uint8List rotate(final dynamic token) {
-    if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
-    }
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
     );
@@ -393,7 +398,7 @@ class MultiFernet {
       }
     }
     if (p == null) {
-      throw InvalidToken();
+      throw InvalidToken('Token could not be decrypted with any key.');
     }
     final Uint8List iv = CryptoUtils.secureRandomBytes(16);
     return _fernets[0]._encryptFromParts(p, timestamp, iv);
@@ -401,9 +406,6 @@ class MultiFernet {
 
   /// See [Fernet.decrypt].
   Uint8List decrypt(final dynamic token, {final int? ttl}) {
-    if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
-    }
     for (final Fernet f in _fernets) {
       try {
         return f.decrypt(token, ttl: ttl);
@@ -411,7 +413,7 @@ class MultiFernet {
         continue;
       }
     }
-    throw InvalidToken();
+    throw InvalidToken('Token could not be decrypted with any key.');
   }
 
   /// See [Fernet.decryptAtTime].
@@ -420,9 +422,6 @@ class MultiFernet {
     final int ttl,
     final int currentTime,
   ) {
-    if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
-    }
     for (final Fernet f in _fernets) {
       try {
         return f.decryptAtTime(token, ttl, currentTime);
@@ -430,14 +429,11 @@ class MultiFernet {
         continue;
       }
     }
-    throw InvalidToken();
+    throw InvalidToken('Token could not be decrypted with any key.');
   }
 
   /// See [Fernet.extractTimeStamp].
   int extractTimeStamp(final dynamic token) {
-    if (token is! Uint8List && token is! String) {
-      throw ArgumentError('token must be Uint8List or String');
-    }
     for (final Fernet f in _fernets) {
       try {
         return f.extractTimeStamp(token);
@@ -445,6 +441,6 @@ class MultiFernet {
         continue;
       }
     }
-    throw InvalidToken();
+    throw InvalidToken('Token could not be decrypted with any key.');
   }
 }

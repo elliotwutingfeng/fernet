@@ -36,4 +36,4 @@ Fernet is ideal for encrypting data that easily fits in memory. As a design feat
 
 ## Credits
 
-This library uses code from other open-source projects. The copyright statements of these open-source projects are listed in [CREDITS.md](CREDITS.md). Most of the documentation and implementation details have been adapted from the Python [cryptography](https://cryptography.io) library.
+This library uses code from open-source projects listed in [CREDITS.md](CREDITS.md). Most documentation and implementation details are adapted from the Python [cryptography](https://cryptography.io) library.
