@@ -19,11 +19,11 @@ linter:
     - eol_at_end_of_file
     - lines_longer_than_80_chars
     - noop_primitive_operations
+    - parameter_assignments
     - prefer_const_declarations
     - prefer_expression_function_bodies
     - prefer_final_in_for_each
     - prefer_final_locals
-    - prefer_final_parameters
     - prefer_foreach
     - prefer_single_quotes
     - sort_pub_dependencies
@@ -35,7 +35,6 @@ linter:
     - unnecessary_parenthesis
     - unnecessary_statements
     - use_enums
-    - use_if_null_to_convert_nulls_to_bools
     - use_is_even_rather_than_modulo
     - use_named_constants
     - use_null_aware_elements
