@@ -10,7 +10,7 @@ This is a direct port of the Fernet implementation in the Python [cryptography](
 
 ## Requirements
 
-- **Dart SDK:** 3.11+
+- **Dart SDK:** 3.13+
 
 ## Using passwords with Fernet
 
@@ -28,7 +28,7 @@ Fernet is built on top of a number of standard cryptographic primitives. Specifi
 
 For complete details consult the [specification](https://github.com/fernet/spec/blob/master/Spec.md).
 
-The cryptographic primitives used in this library are provided by [pointycastle](https://pub.dev/packages/pointycastle).
+The cryptographic primitives used in this library are provided by [cipherlib](https://pub.dev/packages/cipherlib).
 
 ## Limitations
 

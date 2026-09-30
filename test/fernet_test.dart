@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 final Matcher throwsInvalidToken = throwsA(isA<InvalidToken>());
 
-int timeStampToInt(final String timeStamp) =>
+int timeStampToInt(String timeStamp) =>
     DateTime.parse(timeStamp).millisecondsSinceEpoch ~/ 1000;
 
 void main() {
@@ -21,28 +21,6 @@ void main() {
         throwsArgumentError,
       ); // Not url-safe base64-encoded bytes
       expect(() => Fernet(0), throwsArgumentError); // Not Uint8List or String
-    });
-
-    test('CryptoUtils.aesCbc', () {
-      expect(
-        () =>
-            CryptoUtils.aesCbc(Uint8List(0), Uint8List(0), Uint8List(0), true),
-        throwsArgumentError,
-      );
-      expect(
-        () =>
-            CryptoUtils.aesCbc(Uint8List(16), Uint8List(0), Uint8List(0), true),
-        throwsArgumentError,
-      );
-      expect(
-        () => CryptoUtils.aesCbc(
-          Uint8List(16),
-          Uint8List(16),
-          Uint8List(17),
-          true,
-        ),
-        throwsArgumentError,
-      );
     });
 
     test(

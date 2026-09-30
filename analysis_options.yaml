@@ -17,6 +17,8 @@ linter:
     - combinators_ordering
     - directives_ordering
     - eol_at_end_of_file
+    - empty_container_bodies
+    - initialize_in_field_declaration
     - lines_longer_than_80_chars
     - noop_primitive_operations
     - parameter_assignments
@@ -29,11 +31,14 @@ linter:
     - sort_pub_dependencies
     - type_annotate_public_apis
     - unawaited_futures
-    - unnecessary_await_in_return
     - unnecessary_breaks
+    - unnecessary_const_in_enum_constructor
     - unnecessary_lambdas
     - unnecessary_parenthesis
+    - unnecessary_primary_constructor_body
     - unnecessary_statements
+    - unnecessary_type_name_in_constructor
+    - use_declaring_parameters
     - use_enums
     - use_is_even_rather_than_modulo
     - use_named_constants
