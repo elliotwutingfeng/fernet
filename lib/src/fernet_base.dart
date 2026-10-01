@@ -6,58 +6,51 @@ import 'package:cipherlib/codecs.dart';
 import 'package:cipherlib/hashlib.dart';
 import 'package:cipherlib/random.dart';
 
-class InvalidToken implements Exception {
-  final String? message;
-
-  new([this.message]);
-
+class InvalidToken(final String? message) implements Exception {
   @override
   String toString() => message != null
       ? 'InvalidToken: $message'
       : 'InvalidToken: Token is invalid.';
 }
 
+const int maxInt53 = 0x1FFFFFFFFFFFFF; // JavaScript limit: 2^53 - 1
+
+/// [currentTime] must be a non-negative integer
+/// not exceeding JavaScript limit of 2^53 - 1.
+void validateCurrentTime(int currentTime) {
+  if (currentTime < 0 || currentTime > maxInt53) {
+    throw RangeError.value(
+      currentTime,
+      'currentTime',
+      'Must be between 0 and $maxInt53',
+    );
+  }
+}
+
 /// Maximum allowed grace period in seconds for
 /// system clock time being out of sync with Fernet token.
 const int _maxClockSkew = 60;
 
-/// Utility methods for converting between integer and big endian bytes.
-mixin ByteUtils {
-  /// Return a Uint8List of big endian bytes representing an integer.
-  static Uint8List intToBigEndianBytes(int value, {int length = 8}) {
-    final Uint8List result = Uint8List(length);
-    for (int i = 0; i < length; i++) {
-      result[length - 1 - i] = (value >> (8 * i)) & 0xff;
-    }
-    return result;
-  }
-
-  /// Return an integer representing a Uint8List of big endian bytes.
-  static int intFromBigEndianBytes(List<int> bytes) {
-    int result = 0;
-    for (int i = 0; i < bytes.length; i++) {
-      result = (result << 8) + bytes[i];
-    }
-    return result;
-  }
-}
-
 /// This class provides both encryption and decryption facilities.
 class Fernet {
-  late Uint8List _signingKey;
-  late Uint8List _encryptionKey;
+  late final Uint8List _signingKey;
+  late final Uint8List _encryptionKey;
 
   /// [key] is URL-safe base64-encoded and it has to
   /// be 32-bytes long before base64-encoding.
   /// This **must** be kept secret.
   /// Anyone with this [key] is able to create and read messages.
-  new(dynamic key) {
-    if (key is! Uint8List && key is! String) {
-      throw ArgumentError('key must be Uint8List or String.');
-    }
+  factory(Object key) => switch (key) {
+    final Uint8List k => Fernet.fromUint8List(k),
+    final String k => Fernet.fromString(k),
+    _ => throw ArgumentError('key must be Uint8List or String.'),
+  };
+
+  new fromUint8List(Uint8List key) : this.fromString(utf8.decode(key));
+
+  new fromString(String key) {
     try {
-      final String keyStr = key is String ? key : utf8.decode(key as Uint8List);
-      final Uint8List keyDecoded = base64Url.decode(keyStr);
+      final Uint8List keyDecoded = base64Url.decode(key);
       if (keyDecoded.length != 32) {
         throw FormatException();
       }
@@ -89,21 +82,28 @@ class Fernet {
   /// to test token expiration. Since this method can be used in an
   /// insecure manner one should make sure the correct time
   /// is passed as [currentTime] outside testing.
-  Uint8List encryptAtTime(Uint8List data, int currentTime) =>
-      _encryptFromParts(data, currentTime, randomBytes(16));
+  Uint8List encryptAtTime(Uint8List data, int currentTime) {
+    validateCurrentTime(currentTime);
+    return _encryptFromParts(data, currentTime, randomBytes(16));
+  }
 
   Uint8List _encryptFromParts(Uint8List data, int currentTime, Uint8List iv) {
     final Uint8List cipherText = AES
         .pkcs7(_encryptionKey)
         .cbc(iv)
         .encrypt(data);
-    final Uint8List currentTimeBytes = ByteUtils.intToBigEndianBytes(
-      currentTime,
+    final Uint8List currentTimeBytes = fromBigInt(
+      BigInt.from(currentTime),
+      msbFirst: true,
     );
 
     final Uint8List basicParts = Uint8List.fromList([
       0x80,
-      ...currentTimeBytes,
+      ...(Uint8List(8)..setRange(
+        8 - currentTimeBytes.length,
+        8,
+        currentTimeBytes,
+      )), // Pad to 8 bytes
       ...iv,
       ...cipherText,
     ]);
@@ -126,7 +126,7 @@ class Fernet {
   /// (from the time it was originally created) an exception will be thrown.
   /// If [ttl] is not provided (or is null),
   /// the age of the message is not considered.
-  Uint8List decrypt(dynamic token, {int? ttl}) {
+  Uint8List decrypt(Object token, {int? ttl}) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String.');
     }
@@ -148,7 +148,8 @@ class Fernet {
   /// test [token] expiration. Since this method can be used in an insecure
   /// manner one should make sure the correct time is passed
   /// as [currentTime] outside testing.
-  Uint8List decryptAtTime(dynamic token, int ttl, int currentTime) {
+  Uint8List decryptAtTime(Object token, int ttl, int currentTime) {
+    validateCurrentTime(currentTime);
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String.');
     }
@@ -161,7 +162,7 @@ class Fernet {
   /// Returns the Unix timestamp for the [token].
   /// The caller can then decide if the [token] is about to expire and,
   /// for example, issue a new [token].
-  int extractTimeStamp(dynamic token) {
+  int extractTimeStamp(Object token) {
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
     );
@@ -170,11 +171,11 @@ class Fernet {
     return timestamp;
   }
 
-  static (int, Uint8List) _getUnverifiedTokenData(dynamic token) {
+  static (int, Uint8List) _getUnverifiedTokenData(Object token) {
     if (token is! Uint8List && token is! String) {
       throw ArgumentError('token must be Uint8List or String.');
     }
-    late Uint8List data;
+    late final Uint8List data;
     try {
       data = base64Url.decode(
         token is String ? token : utf8.decode(token as Uint8List),
@@ -191,7 +192,7 @@ class Fernet {
     if (data.length < 9) {
       throw InvalidToken('Token too short.');
     }
-    final int timestamp = ByteUtils.intFromBigEndianBytes(data.sublist(1, 9));
+    final int timestamp = toBigInt(data.sublist(1, 9), msbFirst: true).toInt();
     return (timestamp, data);
   }
 
@@ -250,7 +251,7 @@ class Fernet {
 /// using that new key, and then retire the old fernet key(s)
 /// to which the employee had access.
 class MultiFernet {
-  late List<Fernet> _fernets;
+  late final List<Fernet> _fernets;
 
   new(List<Fernet> fernets) {
     if (fernets.isEmpty) {
@@ -271,7 +272,7 @@ class MultiFernet {
   /// primary key. This preserves the timestamp that was originally saved with
   /// the [token]. If a [token] has successfully been rotated then the rotated
   /// [token] will be returned. If rotation fails this will throw an exception.
-  Uint8List rotate(dynamic token) {
+  Uint8List rotate(Object token) {
     final (int timestamp, Uint8List data) = Fernet._getUnverifiedTokenData(
       token,
     );
@@ -292,7 +293,7 @@ class MultiFernet {
   }
 
   /// See [Fernet.decrypt].
-  Uint8List decrypt(dynamic token, {int? ttl}) {
+  Uint8List decrypt(Object token, {int? ttl}) {
     for (final Fernet f in _fernets) {
       try {
         return f.decrypt(token, ttl: ttl);
@@ -304,7 +305,7 @@ class MultiFernet {
   }
 
   /// See [Fernet.decryptAtTime].
-  Uint8List decryptAtTime(dynamic token, int ttl, int currentTime) {
+  Uint8List decryptAtTime(Object token, int ttl, int currentTime) {
     for (final Fernet f in _fernets) {
       try {
         return f.decryptAtTime(token, ttl, currentTime);
@@ -316,7 +317,7 @@ class MultiFernet {
   }
 
   /// See [Fernet.extractTimeStamp].
-  int extractTimeStamp(dynamic token) {
+  int extractTimeStamp(Object token) {
     for (final Fernet f in _fernets) {
       try {
         return f.extractTimeStamp(token);

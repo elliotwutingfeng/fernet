@@ -24,7 +24,7 @@ Fernet is built on top of a number of standard cryptographic primitives. Specifi
 
 - HMAC using SHA256 for authentication.
 
-- Initialization vectors are generated using Random.secure().
+- Initialization vectors are generated using a CSPRNG.
 
 For complete details consult the [specification](https://github.com/fernet/spec/blob/master/Spec.md).
 

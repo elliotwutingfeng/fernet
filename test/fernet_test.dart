@@ -52,6 +52,34 @@ void main() {
         final Uint8List decrypted = fernet.decryptAtTime(token, ttlSec, now);
         expect(decrypted, src);
       }
+
+      final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
+      final Uint8List pt = utf8.encode('encrypt me');
+      final Uint8List token = fernet.encryptAtTime(pt, 100);
+      expect(() => fernet.encryptAtTime(pt, -1), throwsRangeError);
+      expect(
+        () => fernet.encryptAtTime(pt, 0x1FFFFFFFFFFFFF + 1),
+        throwsRangeError,
+      );
+      expect(fernet.decryptAtTime(token, 1, 100), pt);
+      expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
+      expect(
+        () => fernet.decryptAtTime(Uint8List(0), 1, 100),
+        throwsInvalidToken,
+      );
+      expect(
+        () => fernet.decryptAtTime(
+          base64Url.encode([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+          1,
+          100,
+        ),
+        throwsInvalidToken,
+      );
+      expect(
+        () => fernet.decryptAtTime(token.sublist(0, 8), 1, 100),
+        throwsInvalidToken,
+      );
+      expect(() => fernet.decryptAtTime(0, 1, 100), throwsArgumentError);
     });
 
     test('Fernet.encrypt and Fernet.decrypt', () {
@@ -72,7 +100,7 @@ void main() {
         expect(decrypted, src);
       }
 
-      final Fernet fernet = Fernet(testVectors[0]['secret']);
+      final Fernet fernet = Fernet(testVectors[0]['secret']!);
       expect(() => fernet.decrypt(0), throwsArgumentError);
     });
 
@@ -107,31 +135,6 @@ void main() {
         throwsInvalidToken,
       );
       expect(() => fernet.extractTimeStamp(0), throwsArgumentError);
-    });
-
-    test('Fernet.decryptAtTime', () {
-      final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
-      final Uint8List pt = utf8.encode('encrypt me');
-      final Uint8List token = fernet.encryptAtTime(pt, 100);
-      expect(fernet.decryptAtTime(token, 1, 100), pt);
-      expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
-      expect(
-        () => fernet.decryptAtTime(Uint8List(0), 1, 100),
-        throwsInvalidToken,
-      );
-      expect(
-        () => fernet.decryptAtTime(
-          base64Url.encode([0, 1, 2, 3, 4, 5, 6, 7, 8]),
-          1,
-          100,
-        ),
-        throwsInvalidToken,
-      );
-      expect(
-        () => fernet.decryptAtTime(token.sublist(0, 8), 1, 100),
-        throwsInvalidToken,
-      );
-      expect(() => fernet.decryptAtTime(0, 1, 100), throwsArgumentError);
     });
   });
 
