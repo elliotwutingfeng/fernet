@@ -53,14 +53,15 @@ void main() {
         expect(decrypted, src);
       }
 
-      final Fernet fernet = Fernet(base64Url.encode(Uint8List(32)));
+      final Fernet fernet = Fernet(
+        utf8.encode(base64Url.encode(Uint8List(32))),
+      );
       final Uint8List pt = utf8.encode('encrypt me');
       final Uint8List token = fernet.encryptAtTime(pt, 100);
       expect(() => fernet.encryptAtTime(pt, -1), throwsRangeError);
-      expect(
-        () => fernet.encryptAtTime(pt, 0x1FFFFFFFFFFFFF + 1),
-        throwsRangeError,
-      );
+      expect(() => fernet.encryptAtTime(pt, 0), returnsNormally);
+      expect(() => fernet.encryptAtTime(pt, maxInt), returnsNormally);
+      expect(() => fernet.encryptAtTime(pt, maxInt + 1), throwsRangeError);
       expect(fernet.decryptAtTime(token, 1, 100), pt);
       expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
       expect(

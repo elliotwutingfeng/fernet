@@ -1,3 +1,8 @@
+# v0.0.8
+
+- Use cipherlib.
+- Restrict currentTime to JavaScript limit of 2^53 - 1.
+
 # v0.0.7
 
 - Add support for Node.js and WASM.
