@@ -60,8 +60,11 @@ void main() {
       final Uint8List token = fernet.encryptAtTime(pt, 100);
       expect(() => fernet.encryptAtTime(pt, -1), throwsRangeError);
       expect(() => fernet.encryptAtTime(pt, 0), returnsNormally);
-      expect(() => fernet.encryptAtTime(pt, maxInt), returnsNormally);
-      expect(() => fernet.encryptAtTime(pt, maxInt + 1), throwsRangeError);
+      expect(() => fernet.encryptAtTime(pt, 0x1FFFFFFFFFFFFF), returnsNormally);
+      expect(
+        () => fernet.encryptAtTime(pt, 0x1FFFFFFFFFFFFF + 1),
+        throwsRangeError,
+      );
       expect(fernet.decryptAtTime(token, 1, 100), pt);
       expect(() => fernet.decryptAtTime(token, 1, 102), throwsInvalidToken);
       expect(

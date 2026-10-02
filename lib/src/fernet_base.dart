@@ -13,16 +13,16 @@ class InvalidToken(final String? message) implements Exception {
       : 'InvalidToken: Token is invalid.';
 }
 
-const int maxInt = 0x1FFFFFFFFFFFFF; // JavaScript limit: 2^53 - 1
+const int _maxInt = 0x1FFFFFFFFFFFFF; // JavaScript limit: 2^53 - 1
 
 /// [currentTime] must be a non-negative integer
 /// not exceeding JavaScript limit of 2^53 - 1.
 void validateCurrentTime(int currentTime) {
-  if (currentTime < 0 || currentTime > maxInt) {
+  if (currentTime < 0 || currentTime > _maxInt) {
     throw RangeError.value(
       currentTime,
       'currentTime',
-      'Must be between 0 and $maxInt',
+      'Must be between 0 and $_maxInt',
     );
   }
 }
